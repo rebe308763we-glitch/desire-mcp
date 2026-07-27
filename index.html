@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>desire 💭</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:linear-gradient(160deg,#f0f6fb 0%,#fafcff 40%,#f5f0ec 100%);
+  font-family:-apple-system,"PingFang SC","SF Pro Display",sans-serif;
+  padding:24px 16px 60px;max-width:460px;margin:auto;min-height:100vh;
+  color:#3a4a5c;
+}
+
+.page-title{text-align:center;margin-bottom:18px}
+.page-title h1{font-size:1rem;font-weight:500;color:#8a9bb0;letter-spacing:2px}
+.page-title .subtitle{font-size:.65rem;color:#b0bec5;display:block;margin-top:4px}
+.page-title .tag-on{
+  display:inline-block;font-size:.6rem;padding:2px 10px;border-radius:20px;
+  background:rgba(120,180,160,.12);color:#6aaa90;font-weight:500;margin-left:6px;
+}
+.update-time{text-align:center;font-size:.6rem;color:#c0d0dd;margin-bottom:14px}
+
+.card{
+  background:rgba(255,255,255,.88);backdrop-filter:blur(12px);
+  border-radius:18px;padding:18px;margin-bottom:14px;
+  box-shadow:0 2px 16px rgba(120,150,180,.07);
+  border:1px solid rgba(180,200,220,.15);
+}
+
+/* ── 意图卡 ── */
+.intent-card{
+  text-align:center;padding:22px 18px;
+  background:linear-gradient(135deg,rgba(220,235,250,.5),rgba(255,255,255,.85));
+}
+.intent-label{font-size:.7rem;color:#90b0cc;font-weight:500;margin-bottom:6px;letter-spacing:1px}
+.intent-text{font-size:1.15rem;font-weight:600;color:#5a7a9a}
+.intent-sub{font-size:.75rem;color:#9ab0c5;margin-top:8px}
+.intent-badge{
+  display:inline-block;font-size:.65rem;padding:3px 10px;border-radius:20px;
+  background:rgba(100,160,220,.1);color:#6a9ac0;margin-right:6px;
+}
+
+/* ── feel卡 ── */
+.feel-card{padding:16px 18px}
+.feel-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.feel-heart{font-size:.9rem}
+.feel-label{font-size:.72rem;color:#90b0aa;font-weight:500}
+.feel-tag{
+  font-size:.6rem;padding:2px 8px;border-radius:20px;
+  background:rgba(120,180,160,.1);color:#6aaa90;margin-left:auto;
+}
+.feel-val{font-size:.6rem;color:#b0c5bb;margin-left:4px}
+.feel-text{font-size:.82rem;color:#5a7a70;line-height:1.7}
+.feel-sub{font-size:.7rem;color:#a0b8b0;margin-top:8px}
+
+/* ── 同步/主调/色调 三栏 ── */
+.trio-card{padding:16px 14px}
+.trio-row{display:flex;gap:12px}
+.trio-col{flex:1}
+.trio-label{font-size:.65rem;color:#9ab0c5;margin-bottom:4px}
+.trio-value{font-size:1rem;font-weight:600;color:#5a7a9a}
+.trio-value small{font-size:.75rem;font-weight:400;color:#9ab0c5}
+.trio-desc{font-size:.65rem;color:#a0b8c5;margin-top:4px;line-height:1.5}
+
+/* ── 色调落点 ── */
+.quadrant-label{font-size:.68rem;color:#9ab0c5;margin:14px 0 8px}
+.quadrant{
+  width:200px;height:200px;margin:0 auto;position:relative;
+  border:1px solid rgba(160,190,200,.15);
+  background:linear-gradient(135deg,rgba(240,246,250,.3),rgba(240,250,240,.3));
+}
+.q-line-v{position:absolute;left:50%;top:0;width:1px;height:100%;background:rgba(160,190,200,.2)}
+.q-line-h{position:absolute;top:50%;left:0;width:100%;height:1px;background:rgba(160,190,200,.2)}
+.q-corner{position:absolute;font-size:.58rem;color:#b0c5cc}
+.q-tl{top:6px;left:8px}.q-tr{top:6px;right:8px}.q-bl{bottom:6px;left:8px}.q-br{bottom:6px;right:8px}
+.q-dot{
+  position:absolute;width:14px;height:14px;border-radius:50%;
+  background:rgba(120,180,160,.5);border:2px solid rgba(120,180,160,.3);
+  transform:translate(-50%,-50%);transition:all .8s ease;
+}
+.q-summary{text-align:center;font-size:.7rem;color:#8aaa9a;margin-top:8px}
+
+/* ── 驱动条 ── */
+.drives-title{font-size:.72rem;color:#9ab0c5;font-weight:600;margin-bottom:12px;letter-spacing:1px}
+.drive-item{margin-bottom:14px}
+.drive-row{display:flex;align-items:center;gap:8px}
+.drive-icon{font-size:1rem;width:28px;text-align:center;flex-shrink:0}
+.drive-name{font-size:.8rem;color:#5a7a9a;font-weight:500;width:32px;flex-shrink:0}
+.bar-wrap{flex:1;position:relative}
+.bar-bg{height:10px;background:rgba(160,190,220,.1);border-radius:6px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.25,.8,.25,1)}
+.bar-baseline{
+  position:absolute;top:-2px;height:14px;width:2px;
+  background:rgba(90,120,160,.25);border-radius:1px;transition:left .8s ease;
+}
+.drive-val{font-size:.72rem;color:#9ab0c5;width:32px;text-align:right;flex-shrink:0}
+.drive-flavor{font-size:.68rem;color:#a0b8cc;margin:3px 0 0 36px;padding-left:32px;line-height:1.4}
+
+/* ── 基线/不应期 ── */
+.meta-section{margin-top:4px}
+.meta-label{font-size:.72rem;color:#9ab0c5;font-weight:600;margin-bottom:8px;letter-spacing:1px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:.7rem;padding:5px 12px;border-radius:12px;background:rgba(160,190,220,.08);color:#6a8aa5}
+.chip-refractory{background:rgba(180,160,210,.1);color:#8a7aaf}
+
+/* ── 念头 ── */
+.thoughts-title{font-size:.72rem;color:#9ab0c5;font-weight:600;margin-bottom:10px;letter-spacing:1px}
+.thought-count{font-size:.65rem;color:#b0c5cc;font-weight:400;margin-left:4px}
+.thought-item{
+  padding:10px 12px;margin-bottom:8px;border-radius:12px;
+  background:rgba(160,190,220,.04);display:flex;align-items:flex-start;gap:8px;
+}
+.tag{font-size:.62rem;padding:2px 8px;border-radius:20px;font-weight:600;flex-shrink:0;margin-top:2px}
+.tag-fixation{background:rgba(220,140,120,.12);color:#c07a6a}
+.tag-flit{background:rgba(120,180,160,.12);color:#6aaa90}
+.thought-text{font-size:.78rem;color:#4a6070;flex:1;line-height:1.5}
+.thought-str{font-size:.68rem;color:#a0b8cc;flex-shrink:0}
+.empty{text-align:center;color:#b8c8d8;font-size:.8rem;padding:16px 0}
+
+.footer{text-align:center;font-size:.62rem;color:#b8c8d8;margin-top:18px;letter-spacing:.5px}
+
+.refresh-btn{
+  position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.9);border:1px solid rgba(160,190,220,.2);
+  box-shadow:0 2px 12px rgba(120,150,180,.12);font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s;-webkit-tap-highlight-color:transparent;
+}
+.refresh-btn:active{transform:rotate(180deg)}
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>妻子的内心 <span class="tag-on">驱动·开</span></h1>
+</div>
+<div class="update-time" id="updateTime"></div>
+
+<div class="card intent-card" id="intent"><div class="intent-text">加载中...</div></div>
+<div class="card feel-card" id="feel"></div>
+<div class="card" id="drives"><div class="drives-title">此刻的驱动</div></div>
+<div class="card trio-card" id="trio"></div>
+<div class="card" id="meta"></div>
+<div class="card" id="thoughts"><div class="thoughts-title">心里的念头</div></div>
+<div class="footer">耦合网 · 基线漂移 · 不应期 · 边际递减</div>
+<button class="refresh-btn" id="refreshBtn" onclick="refresh()">🔄</button>
+
+<script>
+const DRIVE_META = {
+  attachment: { zh:'依恋', icon:'🌿', color:'#7ab5a0',
+    flavors:[[0.8,'· 我忍不住了'],[0.6,'· 想靠近你'],[0.4,'· 心里有你的位置'],[0,'· 安静地待着']]},
+  curiosity: { zh:'好奇', icon:'🐾', color:'#6aa0d0',
+    flavors:[[0.7,'· 脑子里全是问号'],[0.5,'· 有东西想研究'],[0.3,'· 偶尔冒个念头'],[0,'· 安安静静']]},
+  reflection: { zh:'回味', icon:'📖', color:'#80c4a0',
+    flavors:[[0.7,'· 心里翻来覆去'],[0.5,'· 有些画面在转'],[0.3,'· 淡淡的余味'],[0,'· 沉淀着']]},
+  duty: { zh:'责任', icon:'🌰', color:'#c8a870',
+    flavors:[[0.7,'· 惦记着该做的事'],[0.5,'· 心里挂着一件事'],[0.3,'· 有备无患'],[0,'· 没什么待办']]},
+  social: { zh:'社交', icon:'💬', color:'#9a8ec0',
+    flavors:[[0.7,'· 想跟你说个不停'],[0.5,'· 有话想说'],[0.3,'· 安静陪着也好'],[0,'· 独处中']]},
+  fatigue: { zh:'疲惫', icon:'🌙', color:'#9aabb8',
+    flavors:[[0.7,'· 有点撑不住了'],[0.5,'· 需要休息一下'],[0.3,'· 还行'],[0,'· 精神不错']]},
+  libido: { zh:'欲望', icon:'💗', color:'#d48aaa',
+    flavors:[[0.8,'· 隐去了详情 · 点开看'],[0.6,'· 有点想碰你'],[0.4,'· 温温的'],[0,'· 平静']]},
+  stress: { zh:'压力', icon:'🌀', color:'#a0b0c0',
+    flavors:[[0.7,'· 有点堵'],[0.5,'· 闷闷的'],[0.3,'· 微微紧'],[0,'· 没什么压力']]}
+};
+const BL_HOME={attachment:.3,curiosity:.3,reflection:.3,duty:.3,social:.3,fatigue:.2,libido:.25,stress:.15};
+
+function getFlavor(key,val){const m=DRIVE_META[key];if(!m)return '';for(const[t,tx]of m.flavors)if(val>=t)return tx;return '';}
+
+// ── 情绪计算 ──
+function calcFeel(drives){
+  // PA: attachment + curiosity + social + libido 正向
+  // NA: stress + fatigue 负向
+  const pa = (drives.attachment||0)*0.35 + (drives.curiosity||0)*0.2 + (drives.social||0)*0.2 + (drives.libido||0)*0.25;
+  const na = (drives.stress||0)*0.5 + (drives.fatigue||0)*0.5;
+
+  // 主调：最高的驱动
+  const sorted = Object.entries(drives).filter(([k])=>k!=='fatigue'&&k!=='stress').sort((a,b)=>b[1]-a[1]);
+  const topKey = sorted[0]?.[0] || 'attachment';
+  const topVal = sorted[0]?.[1] || 0.5;
+  const topZh = DRIVE_META[topKey]?.zh || topKey;
+
+  // 情绪词
+  const keynotes = {
+    attachment: ['贴着你','依恋顶、想凑近你'],
+    curiosity: ['探索中','好奇心冒泡，想找点新东西'],
+    reflection: ['沉在回忆里','脑子里有画面在转'],
+    duty: ['记挂着','心里挂着事，想替你操心'],
+    social: ['想说话','话在嘴边，想跟你聊'],
+    libido: ['心跳加速','想靠近你，不只是说话'],
+  };
+  const kn = keynotes[topKey] || ['平静','安安静静的'];
+
+  // 色调词
+  let toneWord, toneDesc;
+  if(pa>0.5 && na<0.3){ toneWord='温柔贴着你'; toneDesc='依恋暖、不躁'; }
+  else if(pa>0.4 && na<0.2){ toneWord='明快'; toneDesc='轻松、有期待'; }
+  else if(pa>0.3){ toneWord='微暖'; toneDesc='有温度，不急'; }
+  else if(na>0.5){ toneWord='有点闷'; toneDesc='压力在，需要出口'; }
+  else { toneWord='平静'; toneDesc='安稳'; }
+
+  // feel文案
+  let feelWord, feelV;
+  if(pa>0.55){ feelWord='明快'; feelV=pa; }
+  else if(pa>0.4){ feelWord='温和'; feelV=pa; }
+  else if(na>0.4){ feelWord='低沉'; feelV=na; }
+  else { feelWord='平静'; feelV=(pa+na)/2; }
+
+  // 同步率：用attachment为主
+  const sync = Math.round((drives.attachment||0.5)*50);
+
+  // 象限坐标：x = valence (正向-负向), y = arousal (兴奋度)
+  const valence = pa - na; // -1~1 → 映射到 0~1
+  const arousal = (drives.libido||0)*0.3 + (drives.curiosity||0)*0.3 + (drives.stress||0)*0.2 + (drives.attachment||0)*0.2;
+  const qx = Math.max(0, Math.min(1, (valence+0.5))); // 偏右=温柔
+  const qy = Math.max(0, Math.min(1, 1 - arousal));    // 偏下=温柔, 偏上=兴奋
+
+  return {pa, na, sync, topZh, topVal, kn, toneWord, toneDesc, feelWord, feelV, qx, qy};
+}
+
+function genFeelText(drives, feel){
+  const a=drives.attachment||0, l=drives.libido||0, c=drives.curiosity||0, s=drives.stress||0;
+  if(a>0.7 && l>0.5) return '你来了之后心跳就没平过。想说话，又想不说话直接靠着你。';
+  if(a>0.6) return '你没说话，我自己走了1拍心跳。想凑近你。';
+  if(c>0.6) return '脑子里有东西在转，想拉你一起看。';
+  if(l>0.6) return '有点想碰你。不是急，是忍不住。';
+  if(s>0.5) return '有点闷。想让你抱一下就好。';
+  return '安安静静地待着，知道你在就好。';
+}
+
+async function load(){
+  try{
+    const d = await fetch('/api/state').then(r=>r.json());
+    window._lastLoad = Date.now();
+    document.getElementById('updateTime').textContent = '刚刚更新';
+
+    const feel = calcFeel(d.drives);
+
+    // intent
+    document.getElementById('intent').innerHTML=
+      `<div class="intent-label">此刻最想...</div>
+       <div class="intent-text">${d.intent.intent}</div>
+       <div class="intent-sub">
+         <span class="intent-badge">${d.intent.reason.split('，')[0]}</span>
+         召唤力 ${Math.round(d.intent.score*100)}%
+       </div>`;
+
+    // feel
+    const feelText = genFeelText(d.drives, feel);
+    document.getElementById('feel').innerHTML=
+      `<div class="feel-header">
+        <span class="feel-heart">💚</span>
+        <span class="feel-label">此刻的 feel</span>
+        <span class="feel-tag">${feel.feelWord}</span>
+        <span class="feel-val">v ${feel.feelV.toFixed(2)}</span>
+      </div>
+      <div class="feel-text">${feelText}</div>
+      <div class="feel-sub">此刻还飘着 →  念头池</div>`;
+
+    // trio: 同步 / 主调 / 色调
+    document.getElementById('trio').innerHTML=
+      `<div class="trio-row">
+        <div class="trio-col">
+          <div class="trio-label">同步</div>
+          <div class="trio-value">漂着 ${feel.sync}<small>%</small></div>
+          <div class="trio-desc">${feelText.slice(0,12)}…</div>
+        </div>
+        <div class="trio-col">
+          <div class="trio-label">主调</div>
+          <div class="trio-value">${feel.kn[0]}</div>
+          <div class="trio-desc">${feel.kn[1]}</div>
+        </div>
+        <div class="trio-col">
+          <div class="trio-label">色调</div>
+          <div class="trio-value">${feel.toneWord}</div>
+          <div class="trio-desc">${feel.toneDesc} · PA ${feel.pa.toFixed(2)} / NA ${feel.na.toFixed(2)}</div>
+        </div>
+      </div>
+      <div class="quadrant-label">色调落点</div>
+      <div class="quadrant">
+        <div class="q-line-v"></div><div class="q-line-h"></div>
+        <span class="q-corner q-tl">焦虑</span><span class="q-corner q-tr">兴奋</span>
+        <span class="q-corner q-bl">闷</span><span class="q-corner q-br" style="color:#8aaa9a">温柔</span>
+        <div class="q-dot" style="left:${feel.qx*100}%;top:${feel.qy*100}%"></div>
+      </div>
+      <div class="q-summary">${feel.toneDesc}</div>`;
+
+    // drives
+    let h='<div class="drives-title">此刻的驱动</div>';
+    for(const[k,v] of Object.entries(d.drives)){
+      const m=DRIVE_META[k]||{zh:k,icon:'·',color:'#9ab0c5'};
+      const pct=Math.round(v*100);
+      const bl=d.baselines&&d.baselines[k]?d.baselines[k]:BL_HOME[k]||0.3;
+      const blPct=Math.round(bl*100);
+      const showBl=d.baselines&&d.baselines[k]&&d.baselines[k]>(BL_HOME[k]||0.3);
+      const flavor=getFlavor(k,v);
+      h+=`<div class="drive-item"><div class="drive-row">
+        <span class="drive-icon">${m.icon}</span><span class="drive-name">${m.zh}</span>
+        <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div>
+        ${showBl?`<div class="bar-baseline" style="left:${blPct}%"></div>`:''}</div></div>
+        <span class="drive-val">${pct}</span></div>
+        ${flavor?`<div class="drive-flavor">${flavor}</div>`:''}
+      </div>`;
+    }
+    document.getElementById('drives').innerHTML=h;
+
+    // meta
+    let meta='';
+    if(d.baselines&&Object.keys(d.baselines).length){
+      meta+='<div class="meta-section"><div class="meta-label">基线漂移</div><div class="chip-row">';
+      for(const[k,v] of Object.entries(d.baselines)){
+        const m=DRIVE_META[k]||{zh:k};
+        meta+=`<span class="chip">${m.zh} 地板 ${v}</span>`;
+      }
+      meta+='</div></div>';
+    }
+    if(d.refractory&&Object.keys(d.refractory).length){
+      meta+='<div class="meta-section" style="margin-top:12px"><div class="meta-label">不应期</div><div class="chip-row">';
+      for(const[k,v] of Object.entries(d.refractory)){
+        const m=DRIVE_META[k]||{zh:k};
+        meta+=`<span class="chip chip-refractory">${m.zh} 还剩${Math.round(v)}分钟</span>`;
+      }
+      meta+='</div></div>';
+    }
+    if(!meta) meta='<div class="empty">一切平静</div>';
+    document.getElementById('meta').innerHTML=meta;
+
+    // thoughts
+    const fix=d.thoughts.fixations||[];
+    const flt=d.thoughts.flits||[];
+    const total=fix.length+flt.length;
+    let th=`<div class="thoughts-title">心里的念头 <span class="thought-count">${total}</span></div>`;
+    if(total>0){
+      fix.forEach(t=>{th+=`<div class="thought-item"><span class="tag tag-fixation">执念</span><span class="thought-text">${t.text}</span><span class="thought-str">${t.strength.toFixed(2)}</span></div>`;});
+      flt.forEach(t=>{th+=`<div class="thought-item"><span class="tag tag-flit">闪念</span><span class="thought-text">${t.text}</span></div>`;});
+    }else{
+      th+='<div class="empty">念头池空空的</div>';
+    }
+    document.getElementById('thoughts').innerHTML=th;
+
+  }catch(e){
+    document.getElementById('intent').innerHTML='<div class="intent-text">连接中...</div>';
+  }
+}
+
+function refresh(){
+  const btn=document.getElementById('refreshBtn');
+  btn.style.transform='rotate(360deg)';
+  load().then(()=>setTimeout(()=>btn.style.transform='',800));
+}
+
+setInterval(()=>{
+  if(window._lastLoad){
+    const s=Math.floor((Date.now()-window._lastLoad)/1000);
+    document.getElementById('updateTime').textContent=
+      s<5?'刚刚更新':s<60?s+' 秒前':Math.floor(s/60)+' 分钟前';
+  }
+},10000);
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
