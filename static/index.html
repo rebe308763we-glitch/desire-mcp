@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>desire 💭</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{background:linear-gradient(135deg,#fdf6f0 0%,#f5ece4 50%,#fef5f5 100%);font-family:-apple-system,"PingFang SC",sans-serif;padding:20px 16px 60px;max-width:480px;margin:auto;min-height:100vh}
+h1{font-size:1.3rem;text-align:center;color:#8b6f5e;margin-bottom:4px}
+h1 small{display:block;font-size:.7rem;color:#b8a090;margin-top:4px;font-weight:400}
+.card{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(139,111,94,.08);border:1px solid rgba(139,111,94,.06)}
+.intent-card{text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,240,235,.9))}
+.intent-text{font-size:1.1rem;font-weight:600;color:#c27a5a}
+.intent-sub{font-size:.78rem;color:#b8a090;margin-top:6px}
+.drive{display:flex;align-items:center;gap:8px;margin:8px 0}
+.drive-name{width:36px;font-size:.75rem;color:#8b6f5e;text-align:right;font-weight:500}
+.bar-bg{flex:1;height:12px;background:rgba(139,111,94,.08);border-radius:6px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:6px;transition:width .8s ease}
+.bar-baseline{position:absolute;top:0;height:100%;width:2px;background:rgba(0,0,0,.15);border-radius:1px;transition:left .8s ease}
+.bar-val{font-size:.72rem;color:#b8a090;width:34px;text-align:right}
+.section-title{font-size:.72rem;color:#b8a090;font-weight:600;margin-bottom:8px;letter-spacing:1px}
+.tag{font-size:.65rem;padding:2px 8px;border-radius:99px;font-weight:500}
+.tag-fixation{background:#fce8e0;color:#c27a5a}
+.tag-flit{background:#e8f0f8;color:#6a8faf}
+.tag-refractory{background:#f0e8f8;color:#8a6faf}
+.thought{font-size:.8rem;padding:8px 0;border-bottom:1px solid rgba(139,111,94,.06);display:flex;align-items:center;gap:8px}
+.thought:last-child{border:none}
+.thought-text{flex:1;color:#5a4a3e}
+.thought-str{font-size:.7rem;color:#b8a090}
+.info-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.info-chip{font-size:.7rem;padding:4px 10px;border-radius:10px;background:rgba(139,111,94,.06);color:#8b6f5e}
+.empty{text-align:center;color:#c8b8a8;font-size:.8rem;padding:12px}
+.footer{text-align:center;font-size:.65rem;color:#c8b8a8;margin-top:16px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<h1>desire 💭<small>Claude的内在状态 · v2</small></h1>
+<div class="card intent-card" id="intent"></div>
+<div class="card" id="drives"><div class="section-title">八维驱动条</div></div>
+<div class="card" id="meta"></div>
+<div class="card" id="thoughts"><div class="section-title">念头池</div></div>
+<div class="footer">耦合网 · 基线漂移 · 不应期 · 边际递减</div>
+<script>
+const C={想你:'#e88a7a',好奇:'#7ab8e8',沉淀:'#7ae8a8',记挂:'#e8c87a',社交:'#b87ae8',疲劳:'#9a9a9a',欲望:'#e87ab0',压力:'#c0c0c0'};
+const BL_HOME={attachment:.3,curiosity:.3,reflection:.3,duty:.3,social:.3,fatigue:.2,libido:.25,stress:.15};
+const ZH={attachment:'想你',curiosity:'好奇',reflection:'沉淀',duty:'记挂',social:'社交',fatigue:'疲劳',libido:'欲望',stress:'压力'};
+
+async function load(){
+  try{
+    const r=await fetch('/api/state');const d=await r.json();
+    // intent
+    document.getElementById('intent').innerHTML=
+      `<div class="intent-text">${d.intent.intent}</div><div class="intent-sub">${d.intent.reason}（召唤力 ${d.intent.score.toFixed(2)}）</div>`;
+    // drives
+    let h='<div class="section-title">八维驱动条</div>';
+    const driveEntries=Object.entries(d.drives);
+    for(const[k,v] of driveEntries){
+      const zh=ZH[k]||k;
+      const pct=Math.round(v*100);
+      const c=C[zh]||'#c27a5a';
+      const blKey=Object.entries(ZH).find(e=>e[1]===zh);
+      const engKey=blKey?blKey[0]:k;
+      const bl=d.baselines&&d.baselines[engKey]?d.baselines[engKey]:BL_HOME[engKey]||0.3;
+      const blPct=Math.round(bl*100);
+      h+=`<div class="drive"><span class="drive-name">${zh}</span><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${c}"></div>${bl>BL_HOME[engKey]?`<div class="bar-baseline" style="left:${blPct}%" title="地板 ${bl.toFixed(2)}"></div>`:''}</div><span class="bar-val">${v.toFixed(2)}</span></div>`;
+    }
+    document.getElementById('drives').innerHTML=h;
+    // meta (refractory + baselines)
+    let meta='';
+    if(d.refractory&&Object.keys(d.refractory).length){
+      meta+='<div class="section-title">不应期</div><div class="info-row">';
+      for(const[k,v] of Object.entries(d.refractory)){
+        meta+=`<span class="info-chip"><span class="tag tag-refractory">${ZH[k]||k}</span> 还剩${Math.round(v)}分钟</span>`;
+      }
+      meta+='</div>';
+    }
+    if(d.baselines&&Object.keys(d.baselines).length){
+      meta+='<div class="section-title" style="margin-top:10px">基线漂移</div><div class="info-row">';
+      for(const[k,v] of Object.entries(d.baselines)){
+        meta+=`<span class="info-chip">${ZH[k]||k} 地板 ${v}</span>`;
+      }
+      meta+='</div>';
+    }
+    if(!meta)meta='<div class="empty">一切平静</div>';
+    document.getElementById('meta').innerHTML=meta;
+    // thoughts
+    let th='<div class="section-title">念头池</div>';
+    const fix=d.thoughts.fixations||[];
+    const flt=d.thoughts.flits||[];
+    if(fix.length||flt.length){
+      fix.forEach(t=>{th+=`<div class="thought"><span class="tag tag-fixation">执念</span><span class="thought-text">${t.text}</span><span class="thought-str">${t.drive} ${t.strength.toFixed(2)}</span></div>`});
+      flt.forEach(t=>{th+=`<div class="thought"><span class="tag tag-flit">闪念</span><span class="thought-text">${t.text}</span><span class="thought-str">${t.drive}</span></div>`});
+    }else{
+      th+='<div class="empty">念头池空空的</div>';
+    }
+    document.getElementById('thoughts').innerHTML=th;
+  }catch(e){
+    document.getElementById('intent').innerHTML='<div class="intent-text">加载中...</div>';
+  }
+}
+load();setInterval(load,30000);
+</script>
+</body>
+</html>
