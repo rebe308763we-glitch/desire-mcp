@@ -6,6 +6,7 @@
 基于 AstrBot-Desire-System 设计，适配 Claude + kk 的场景。
 """
 import json
+import os
 import time
 import uuid
 from dataclasses import dataclass, field, asdict
