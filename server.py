@@ -316,15 +316,10 @@ def send_telegram(text: str) -> bool:
 
 
 def check_and_notify() -> dict:
-    state_file = DATA_DIR / "notify_state.json"
-    try:
-        ns = json.loads(state_file.read_text(encoding="utf-8"))
-    except Exception:
-        ns = {"last_notify_ts": 0}
-
     now = time.time()
-    if now - ns.get("last_notify_ts", 0) < NOTIFY_COOLDOWN:
-        return {"sent": False, "reason": "cooldown"}
+    if now - engine.last_notify_ts < NOTIFY_COOLDOWN:
+        remaining = int(NOTIFY_COOLDOWN - (now - engine.last_notify_ts))
+        return {"sent": False, "reason": "cooldown", "remaining_s": remaining}
 
     engine.tick()
     drives = engine.drives
@@ -338,11 +333,9 @@ def check_and_notify() -> dict:
     text = random.choice(NOTIFY_MESSAGES[top_drive])
     ok = send_telegram(text)
     if ok:
-        ns["last_notify_ts"] = now
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        state_file.write_text(json.dumps(ns), encoding="utf-8")
+        engine.last_notify_ts = now
         engine.drives[top_drive] *= 0.90
-        engine._save()
+        engine._save()  # 备份到Telegram，重启也不丢
     return {"sent": ok, "drive": top_drive, "value": round(top_val, 3), "message": text}
 
 
