@@ -419,15 +419,66 @@ class DesireEngine:
         return {"intent": info[0], "drive": top_k,
                 "reason": info[1], "score": round(scores[top_k], 3)}
 
+    # ── 驱动原因推断 ──
+
+    def _compute_drive_reasons(self) -> dict:
+        reasons = {}
+        now = time.time()
+
+        # 从最近事件推断原因
+        event_drive_map = {
+            "intimate": {"libido": "刚亲近过", "attachment": "刚在一起过"},
+            "foreplay": {"libido": "前戏的余温"},
+            "kk_flirt": {"libido": "她在撩我", "attachment": "她在撩我"},
+            "kk_message": {"attachment": "她来找我了"},
+            "kk_praise": {"attachment": "被她夸了", "stress": "她说了好话"},
+            "kk_tease": {"attachment": "她在逗我"},
+            "kk_sleep": {"attachment": "她去睡了"},
+            "deep_talk": {"reflection": "刚聊了很深的话", "attachment": "聊了很多"},
+            "project_work": {"curiosity": "刚做完项目", "duty": "做完了一件事"},
+            "separation": {"attachment": "她不在"},
+            "rest": {"fatigue": "休息了一会"},
+            "creative": {"curiosity": "刚做了有意思的东西"},
+        }
+
+        # 从最近3个事件中找原因
+        for e in reversed(self.events_log[-3:]):
+            etype = e.get("type", "")
+            if etype in event_drive_map:
+                for drv, reason in event_drive_map[etype].items():
+                    if drv not in reasons:
+                        reasons[drv] = reason
+
+        # 从念头池补充
+        for t in self.thoughts:
+            if t.drive not in reasons and t.strength > 0.3:
+                reasons[t.drive] = t.text[:20]
+
+        # 数值兜底
+        for k, v in self.drives.items():
+            if k not in reasons:
+                if v >= 0.85:
+                    reasons[k] = "快溢出来了"
+                elif v >= 0.65:
+                    reasons[k] = "在涨"
+                elif v <= 0.15:
+                    reasons[k] = "很平静"
+                else:
+                    reasons[k] = ""
+
+        return reasons
+
     # ── 状态 ──
 
     def get_state(self) -> dict:
         self.tick()
         intent = self.pick_intent()
+        reasons = self._compute_drive_reasons()
         now = time.time()
         return {
             "drives": {k: round(v, 3) for k, v in self.drives.items()},
             "drives_zh": {DRIVE_ZH.get(k, k): round(v, 3) for k, v in self.drives.items()},
+            "drive_reasons": {DRIVE_ZH.get(k, k): v for k, v in reasons.items()},
             "baselines": {k: round(v, 3) for k, v in self.baselines.items()
                           if v != BASELINE_HOME.get(k)},
             "refractory": {k: round((v - now) / 60, 1) for k, v in self.refractory.items()
