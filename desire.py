@@ -146,6 +146,7 @@ class DesireEngine:
         self.thoughts: list[Thought] = []
         self.last_tick = time.time()
         self.events_log: list[dict] = []
+        self.last_notify_ts: float = 0.0
 
         self._load()
 
@@ -222,6 +223,7 @@ class DesireEngine:
             "last_tick": self.last_tick,
             "thoughts": [t.to_dict() for t in self.thoughts],
             "events_log": self.events_log[-20:],
+            "last_notify_ts": self.last_notify_ts,
         }
 
     def _deserialize(self, d: dict):
@@ -232,6 +234,7 @@ class DesireEngine:
         self.last_tick = d.get("last_tick", time.time())
         self.thoughts = [Thought.from_dict(t) for t in d.get("thoughts", [])]
         self.events_log = d.get("events_log", [])[-20:]
+        self.last_notify_ts = d.get("last_notify_ts", 0.0)
 
     def _load(self):
         f = self.data_path / "desire_state.json"
